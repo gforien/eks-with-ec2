@@ -18,6 +18,7 @@ provider "aws" {
 #-----------------------------------------------------------------------------------------
 resource "aws_vpc" "default" {
   cidr_block = "12.13.0.0/16"
+  enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "default" {
   vpc_id = aws_vpc.default.id
@@ -87,6 +88,9 @@ variable "AWS_KEYNAME" {
 }
 output "EC2_public_ips" {
   value = aws_instance.node.*.public_ip
+}
+output "EC2_public_dns" {
+  value = aws_instance.node.*.public_dns
 }
 resource "aws_instance" "node" {
   instance_type = "t2.micro"
