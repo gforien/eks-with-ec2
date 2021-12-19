@@ -85,7 +85,10 @@ variable "AWS_KEYNAME" {
   type = string
   description = "Pre-existing SSH key in order to connect to an EC2."
 }
-resource "aws_instance" "node1" {
+output "EC2_public_ips" {
+  value = aws_instance.node.*.public_ip
+}
+resource "aws_instance" "node" {
   instance_type = "t2.micro"
   ami           = "ami-0ed961fa828560210"
   subnet_id = aws_subnet.default.id
