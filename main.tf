@@ -77,8 +77,18 @@ resource "aws_route_table_association" "default" {
   route_table_id = aws_route_table.default.id
 }
 
+
 #-----------------------------------------------------------------------------------------
 # 3. Instance
 #-----------------------------------------------------------------------------------------
-# resource "aws_instance" {
-# }
+variable "AWS_KEYNAME" {
+  type = string
+  description = "Pre-existing SSH key in order to connect to an EC2."
+}
+resource "aws_instance" "node1" {
+  instance_type = "t2.micro"
+  ami           = "ami-0ed961fa828560210"
+  subnet_id = aws_subnet.default.id
+  vpc_security_group_ids = [aws_security_group.default.id]
+  key_name = var.AWS_KEYNAME
+}
