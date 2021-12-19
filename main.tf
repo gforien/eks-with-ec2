@@ -59,6 +59,25 @@ resource "aws_security_group" "default" {
 
 
 #-----------------------------------------------------------------------------------------
+# 2. Subnet, NIC, route-table association
+#-----------------------------------------------------------------------------------------
+resource "aws_subnet" "default" {
+  vpc_id = aws_vpc.default.id
+  cidr_block = "12.13.14.0/24"
+
+  # Subnets have to be allowed to automatically map public IP addresses for worker nodes
+  map_public_ip_on_launch = true
+}
+resource "aws_network_interface" "default" {
+  subnet_id = aws_subnet.default.id
+  security_groups = [aws_security_group.default.id]
+}
+resource "aws_route_table_association" "default" {
+  subnet_id = aws_subnet.default.id
+  route_table_id = aws_route_table.default.id
+}
+
+#-----------------------------------------------------------------------------------------
 # 3. Instance
 #-----------------------------------------------------------------------------------------
 # resource "aws_instance" {
