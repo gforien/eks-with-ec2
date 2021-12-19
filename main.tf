@@ -104,4 +104,13 @@ resource "aws_instance" "node" {
   vpc_security_group_ids = [aws_security_group.default.id]
   key_name               = var.AWS_KEYNAME
   count                  = var.cluster_size
+  user_data              = <<-EOF
+    #!/bin/bash
+    sudo yum update -y
+    sudo yum install -y docker
+    sudo service docker start
+    sudo usermod -a -G docker ec2-user
+    sudo newgrp docker
+    docker run -p 80:80 -d hello-world
+  EOF
 }
