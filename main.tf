@@ -183,5 +183,24 @@ sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 sudo systemctl enable --now kubelet
 kubeadm version && kubelet --version && kubectl version # test
 
+# custom steps
+# ----------------------------------------------------------------------------------------
+# sudo systemctl enable docker.service
+
+# solution for issue #2
+# cat <<EOOF | sudo tee /etc/docker/daemon.json
+# {
+#     "exec-opts": ["native.cgroupdriver=systemd"]
+# }
+# EOOF
+# sudo systemctl daemon-reload
+# sudo systemctl restart docker
+# sudo systemctl restart kubelet
+
+# sudo kubeadm init --ignore-preflight-errors=NumCPU,Mem
+# will execute kubeadm config images pull
+kubectl config view                                     # test
+kubectl get all                                         # test
+# ----------------------------------------------------------------------------------------
 EOF
 }
