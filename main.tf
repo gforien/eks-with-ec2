@@ -89,7 +89,7 @@ variable "AWS_KEYNAME" {
 variable "cluster_size" {
   type = number
   description = "Number of EC2 instances to provision."
-  default = 2
+  default = 1
 }
 output "EC2_public_ips" {
   value = aws_instance.node.*.public_ip
