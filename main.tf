@@ -86,6 +86,11 @@ variable "AWS_KEYNAME" {
   type = string
   description = "Pre-existing SSH key in order to connect to an EC2."
 }
+variable "cluster_size" {
+  type = number
+  description = "Number of EC2 instances to provision."
+  default = 2
+}
 output "EC2_public_ips" {
   value = aws_instance.node.*.public_ip
 }
@@ -98,5 +103,5 @@ resource "aws_instance" "node" {
   subnet_id = aws_subnet.default.id
   vpc_security_group_ids = [aws_security_group.default.id]
   key_name = var.AWS_KEYNAME
-  count = 3
+  count = var.cluster_size
 }
