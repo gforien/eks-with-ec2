@@ -91,4 +91,5 @@ resource "aws_instance" "node1" {
   subnet_id = aws_subnet.default.id
   vpc_security_group_ids = [aws_security_group.default.id]
   key_name = var.AWS_KEYNAME
+  count = 3
 }
