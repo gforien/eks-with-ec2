@@ -17,7 +17,7 @@ provider "aws" {
 # 1. VPC, IG, route table, SG
 #-----------------------------------------------------------------------------------------
 resource "aws_vpc" "default" {
-  cidr_block = "12.13.0.0/16"
+  cidr_block           = "12.13.0.0/16"
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "default" {
@@ -63,18 +63,18 @@ resource "aws_security_group" "default" {
 # 2. Subnet, NIC, route-table association
 #-----------------------------------------------------------------------------------------
 resource "aws_subnet" "default" {
-  vpc_id = aws_vpc.default.id
+  vpc_id     = aws_vpc.default.id
   cidr_block = "12.13.14.0/24"
 
   # Subnets have to be allowed to automatically map public IP addresses for worker nodes
   map_public_ip_on_launch = true
 }
 resource "aws_network_interface" "default" {
-  subnet_id = aws_subnet.default.id
+  subnet_id       = aws_subnet.default.id
   security_groups = [aws_security_group.default.id]
 }
 resource "aws_route_table_association" "default" {
-  subnet_id = aws_subnet.default.id
+  subnet_id      = aws_subnet.default.id
   route_table_id = aws_route_table.default.id
 }
 
@@ -83,13 +83,13 @@ resource "aws_route_table_association" "default" {
 # 3. Instance
 #-----------------------------------------------------------------------------------------
 variable "AWS_KEYNAME" {
-  type = string
+  type        = string
   description = "Pre-existing SSH key in order to connect to an EC2."
 }
 variable "cluster_size" {
-  type = number
+  type        = number
   description = "Number of EC2 instances to provision."
-  default = 1
+  default     = 1
 }
 output "EC2_public_ips" {
   value = aws_instance.node.*.public_ip
@@ -98,10 +98,10 @@ output "EC2_public_dns" {
   value = aws_instance.node.*.public_dns
 }
 resource "aws_instance" "node" {
-  instance_type = "t2.micro"
-  ami           = "ami-0ed961fa828560210"
-  subnet_id = aws_subnet.default.id
+  instance_type          = "t2.micro"
+  ami                    = "ami-0ed961fa828560210"
+  subnet_id              = aws_subnet.default.id
   vpc_security_group_ids = [aws_security_group.default.id]
-  key_name = var.AWS_KEYNAME
-  count = var.cluster_size
+  key_name               = var.AWS_KEYNAME
+  count                  = var.cluster_size
 }
