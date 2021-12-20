@@ -137,4 +137,70 @@ resource "aws_instance" "node" {
   vpc_security_group_ids = [aws_security_group.default.id]
   key_name               = var.AWS_KEYNAME
   count                  = var.cluster_size
+  user_data              = <<-EOF
+#!/bin/bash
+
+# install docker
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg lsb-release apt-transport-https
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+sudo service docker start
+sudo usermod -a -G docker ubuntu
+sudo newgrp docker
+docker run -p 80:80 -d hello-world
+docker ps -a                                            # test
+
+# network config
+sudo modprobe br_netfilter
+lsmod | grep br_netfilter                               # test
+
+# network config 2
+cat <<EOOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOOF
+sudo sysctl --system | grep bridge-nf-call              # test
+
+# check container runtime
+ls -l /var/run/docker.sock                              # test
+
+# prepare kubeadm, kubelet and kubectl installation
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<EOOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOOF
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+
+# solution for issue #2
+cat <<EOOF | sudo tee /etc/docker/daemon.json
+{
+    "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+sudo systemctl restart kubelet
+
+# kubeadm init \
+#   --ignore-preflight-errors=NumCPU,Mem \
+#   --token=${var.token}
+# mkdir -p $HOME/.kube
+# sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+# sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# kubeadm join 12.13.14.146:6443 \
+#   --discovery-token-unsafe-skip-ca-verification \
+#   --token=iangzw.isv0gkb5dy86n3ft
+EOF
 }
