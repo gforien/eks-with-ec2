@@ -124,6 +124,10 @@ variable "cluster_size" {
   description = "Number of EC2 instances to provision."
   default     = 1
 }
+variable "token" {
+  type        = string
+  description = "Token used for creating the K8S cluster. Use Get-K8sToken to generate one."
+}
 output "EC2_public_ips" {
   value = aws_instance.node.*.public_ip
 }
