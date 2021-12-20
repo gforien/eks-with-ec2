@@ -131,9 +131,6 @@ variable "token" {
 output "worker_public_ips" {
   value = aws_instance.worker_node.*.public_ip
 }
-output "EC2_public_dns" {
-  value = aws_instance.worker_node.*.public_dns
-}
 resource "aws_instance" "worker_node" {
   instance_type          = "t2.micro"
   ami                    = "ami-08ca3fed11864d6bb"
