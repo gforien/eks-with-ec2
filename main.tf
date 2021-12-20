@@ -128,6 +128,9 @@ variable "token" {
   type        = string
   description = "Token used for creating the K8S cluster. Use Get-K8sToken to generate one."
 }
+output "master_public_ip" {
+  value = aws_instance.master_node.public_ip
+}
 output "worker_public_ips" {
   value = aws_instance.worker_node.*.public_ip
 }
