@@ -52,7 +52,10 @@
 - Nécessite une clé SSH pré-existante pour se connecter
 - Nécessite une variable d'environnement `TF_VAR_AWS_KEYNAME`
   (`$env:TF_VAR_AWS_KEYNAME` avec Windows Powershell)
-- Nécessite de sourcer `Get-K8sToken.ps1`
+```powershell
+$env:TF_VAR_AWS_KEYNAME = 'XXXXXXXX'
+terraform apply -var token=$(.\Get-K8sToken.ps1)
+```
 
 
 ###### Gabriel Forien<br>INSA Lyon
