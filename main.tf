@@ -132,75 +132,9 @@ output "EC2_public_dns" {
 }
 resource "aws_instance" "node" {
   instance_type          = "t2.micro"
-  ami                    = "ami-0ed961fa828560210"
+  ami                    = "ami-08ca3fed11864d6bb"
   subnet_id              = aws_subnet.default.id
   vpc_security_group_ids = [aws_security_group.default.id]
   key_name               = var.AWS_KEYNAME
   count                  = var.cluster_size
-  user_data              = <<-EOF
-#!/bin/bash
-
-# install docker
-sudo yum update -y
-sudo yum install -y docker
-sudo service docker start
-sudo usermod -a -G docker ec2-user
-sudo newgrp docker
-docker run -p 80:80 -d hello-world
-
-# network config
-sudo modprobe br_netfilter
-lsmod | grep br_netfilter                               # test
-
-# network config 2
-cat <<EOOF | sudo tee /etc/sysctl.d/k8s.conf
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOOF
-sudo sysctl --system | grep bridge-nf-call              # test
-
-# check container runtime
-ls -l /var/run/docker.sock                              # test
-
-# prepare kubeadm, kubelet and kubectl installation
-cat <<EOOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-exclude=kubelet kubeadm kubectl
-EOOF
-
-# deactivate selinux
-sudo setenforce 0
-sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-
-# install kubeadm, kubelet and kubectl
-sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
-sudo systemctl enable --now kubelet
-kubeadm version && kubelet --version && kubectl version # test
-
-# custom steps
-# ----------------------------------------------------------------------------------------
-# sudo systemctl enable docker.service
-
-# solution for issue #2
-# cat <<EOOF | sudo tee /etc/docker/daemon.json
-# {
-#     "exec-opts": ["native.cgroupdriver=systemd"]
-# }
-# EOOF
-# sudo systemctl daemon-reload
-# sudo systemctl restart docker
-# sudo systemctl restart kubelet
-
-# sudo kubeadm init --ignore-preflight-errors=NumCPU,Mem
-# will execute kubeadm config images pull
-kubectl config view                                     # test
-kubectl get all                                         # test
-# ----------------------------------------------------------------------------------------
-EOF
 }
